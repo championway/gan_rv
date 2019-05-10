@@ -74,17 +74,16 @@ if cuda:
 if True:
     # opt.epoch
     # Load pretrained models
-    pth_name = 18200
-    G_AB.load_state_dict(torch.load('saved_models/%s/G_AB_%d.pth' % (opt.dataset_name, 18200)))
-    G_BA.load_state_dict(torch.load('saved_models/%s/G_BA_%d.pth' % (opt.dataset_name, 18200)))
-    D_A.load_state_dict(torch.load('saved_models/%s/D_A_%d.pth' % (opt.dataset_name, 18200)))
-    D_B.load_state_dict(torch.load('saved_models/%s/D_B_%d.pth' % (opt.dataset_name, 18200)))
-else:
-    # Initialize weights
-    G_AB.apply(weights_init_normal)
-    G_BA.apply(weights_init_normal)
-    D_A.apply(weights_init_normal)
-    D_B.apply(weights_init_normal)
+    # G_AB.load_state_dict(torch.load('saved_models/%s/G_AB_%d.pth' % (opt.dataset_name, 18200)))
+    G_AB.load_state_dict(torch.load('/home/arg_ws3/PyTorch-GAN/implementations/cyclegan/saved_models/MM_BOX/G_AB_477000_.pth'))
+    # D_A.load_state_dict(torch.load('saved_models/%s/D_A_%d.pth' % (opt.dataset_name, 18200)))
+#     D_B.load_state_dict(torch.load('saved_models/%s/D_B_%d.pth' % (opt.dataset_name, 18200)))
+# else:
+#     # Initialize weights
+#     G_AB.apply(weights_init_normal)
+#     G_BA.apply(weights_init_normal)
+#     D_A.apply(weights_init_normal)
+#     D_B.apply(weights_init_normal)
 
 
 Tensor = torch.cuda.FloatTensor if cuda else torch.Tensor
@@ -119,7 +118,7 @@ data_transform = transforms.Compose(
 def sample_images(batches_done):
     """Saves a generated sample from the test set"""
     #imgs = next(iter(val_dataloader))
-    image = cv2.imread("0_original.png")
+    image = cv2.imread("/media/arg_ws3/5E703E3A703E18EB/data/mm_unity/unity_boxes/box_108/Scene65/11_original.png")
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     pil_im = Image.fromarray(image)
     pil_im = data_transform(pil_im)
@@ -135,7 +134,7 @@ def sample_images(batches_done):
     #print(imgs['A'].shape)
 
     my_img = Variable(pil_im.type(Tensor))
-    my_img_fake = G_BA(my_img)
+    my_img_fake = G_AB(my_img)
     my_img_fake = my_img_fake.squeeze(0).detach().cpu()
 
     #my_img_fake = transforms.functional.to_pil_image(my_img_fake)

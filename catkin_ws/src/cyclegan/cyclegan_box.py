@@ -35,7 +35,7 @@ parser.add_argument('--img_height', type=int, default=240, help='size of image h
 parser.add_argument('--img_width', type=int, default=320, help='size of image width')
 parser.add_argument('--channels', type=int, default=3, help='number of image channels')
 parser.add_argument('--sample_interval', type=int, default=500, help='interval between sampling images from generators')
-parser.add_argument('--checkpoint_interval', type=int, default=2000, help='interval between saving model checkpoints')
+parser.add_argument('--checkpoint_interval', type=int, default=500, help='interval between saving model checkpoints')
 parser.add_argument('--n_residual_blocks', type=int, default=9, help='number of residual blocks in generator')
 opt = parser.parse_args()
 print(opt)
