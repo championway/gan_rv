@@ -35,6 +35,7 @@ $ source environment.sh
 ```
 RGB image --> mask
 $ rosrun classify gan_crop.py
+(Please modify the SSD & GAN model path for your own computer)
 
 RGB image + Depth image + Mask --> Point Cloud
 $ roslaunch pcl_exercise mask_to_point.launch
