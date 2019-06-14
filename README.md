@@ -28,10 +28,12 @@ $ source environment.sh
 
 ## Pixelwise classification combining SSD and GAN
 
+### Download network models
 - SSD model: https://drive.google.com/open?id=1TIXA0t9OMXW6_ojoSd9jfSIlbSbagyWA
 - GAN model: https://drive.google.com/open?id=1eCMgsKO7VXYg77_mAtGMSBT9Z4sod4b1
 - Rosbag file: https://drive.google.com/open?id=1onTrb6HU35V7RusSw_bV8Nzmt7PLiR99
 
+### Run the code
 ```
 RGB image --> mask
 $ rosrun classify gan_crop.py
@@ -42,4 +44,11 @@ $ roslaunch pcl_exercise mask_to_point.launch
 
 Run rosbag recorded in tunnel(Real data)
 $ rosbag play artifact_part.bag
+```
+
+### Evaluate in jupyter notebook
+
+```
+$ jupyter-notebook gan_rv/catkin_ws/src/classify/src/predict_gan_ssd.ipynb
+UNDO: IOU, fscore......
 ```
