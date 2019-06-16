@@ -71,12 +71,18 @@ class SPARSE2DENSE():
 		self.image_pub = rospy.Publisher("/generate_dp", Image, queue_size = 1)
 		self.msg_pub = rospy.Publisher("/mask_to_point", bb_input, queue_size = 1)
 		self.points = []
+		self.time_total = 0
+		self.time_count = 0
 		rospy.loginfo("Start Generating depth image")
 
 	def img_cb(self, rgb_data, depth_data):
 		cv_image = self.bridge.imgmsg_to_cv2(rgb_data, "bgr8")
 		cv_depthimage = self.bridge.imgmsg_to_cv2(depth_data, "16UC1")
+		now = rospy.get_time()
 		generate_img = self.predict(cv_image)
+		self.time_total = self.time_total + rospy.get_time() - now
+		self.time_count = self.time_count + 1
+		rospy.loginfo("Average time : %f , Hz : %f ", self.time_total/self.time_count, self.time_count/self.time_total)
 		msg = bb_input()
 		msg.image = rgb_data
 		msg.depth = depth_data
@@ -101,10 +107,7 @@ class SPARSE2DENSE():
 		xx = Variable(x.unsqueeze(0))     # wrap tensor in Variable
 		if torch.cuda.is_available():
 			xx = xx.cuda()
-		t1 = rospy.get_time()
 		y = self.net(xx)
-		t2 = rospy.get_time()
-		# print(1./(t2-t1))
 		scale = torch.Tensor(image.shape[1::-1]).repeat(2)
 		detections = y.data	# torch.Size([1, 4, 200, 5]) --> [batch?, class, object, coordinates]
 		objs = []
@@ -145,8 +148,10 @@ class SPARSE2DENSE():
 				elif obj[4] == 3:
 					cv2.rectangle(tmp_img, (int(obj[0]), int(obj[1])),\
 					(int(obj[0] + obj[2]), int(obj[1] + obj[3])), (255, 255, 0), 3)
+
 		generate_img_draw = generate_img.copy()
 		generate_img_draw[generate_img_draw > 0] = 255
+
 
 		self.image_pub.publish(self.bridge.cv2_to_imgmsg(generate_img_draw, "8UC3"))
 		self.rgb_pub.publish(self.bridge.cv2_to_imgmsg(tmp_img, "bgr8"))
