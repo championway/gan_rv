@@ -24,9 +24,9 @@ import torch
 parser = argparse.ArgumentParser()
 parser.add_argument('--epoch', type=int, default=0, help='epoch to start training from')
 parser.add_argument('--n_epochs', type=int, default=200, help='number of epochs of training')
-parser.add_argument('--dataset_name', type=str, default="box_sim2real_lr_ID_D", help='name of the dataset')
+parser.add_argument('--dataset_name', type=str, default="box_sim2real_G_LAMDAID_1", help='name of the dataset')
 parser.add_argument('--batch_size', type=int, default=1, help='size of the batches')
-parser.add_argument('--lr', type=float, default=0.001, help='adam: learning rate')
+parser.add_argument('--lr', type=float, default=0.0002, help='adam: learning rate')
 parser.add_argument('--b1', type=float, default=0.5, help='adam: decay of first order momentum of gradient')
 parser.add_argument('--b2', type=float, default=0.999, help='adam: decay of first order momentum of gradient')
 parser.add_argument('--decay_epoch', type=int, default=100, help='epoch from which to start lr decay')
@@ -109,7 +109,7 @@ else:
 
 # Loss weights
 lambda_cyc = 10
-lambda_id = 0.5 * lambda_cyc
+lambda_id = lambda_cyc
 
 # Optimizers
 optimizer_G = torch.optim.Adam(itertools.chain(G_AB.parameters(), G_BA.parameters()),
@@ -136,10 +136,10 @@ transforms_ = [ transforms.Resize(int(opt.img_height*1.12), Image.BICUBIC),
                 transforms.Normalize((0.5,0.5,0.5), (0.5,0.5,0.5)) ]
 
 # Training data loader
-dataloader = DataLoader(ImageDataset("/media/arg_ws3/5E703E3A703E18EB/data/mm_unity/", transforms_=transforms_, unaligned=True),
+dataloader = DataLoader(ImageDataset("/media/arg_ws3/5E703E3A703E18EB/data/mm_unity_new/", transforms_=transforms_, unaligned=True),
                         batch_size=opt.batch_size, shuffle=True, num_workers=opt.n_cpu)
 # Test data loader
-val_dataloader = DataLoader(ImageDataset("/media/arg_ws3/5E703E3A703E18EB/data/mm_unity/", transforms_=transforms_, unaligned=True, mode='test'),
+val_dataloader = DataLoader(ImageDataset("/media/arg_ws3/5E703E3A703E18EB/data/mm_unity_new/", transforms_=transforms_, unaligned=True, mode='test'),
                         batch_size=5, shuffle=True, num_workers=1)
 
 
@@ -173,6 +173,9 @@ for epoch in range(opt.epoch, opt.n_epochs):
         # ------------------
         #  Train Generators
         # ------------------
+
+        G_AB.train()
+        G_BA.train()
 
         optimizer_G.zero_grad()
 
@@ -221,9 +224,9 @@ for epoch in range(opt.epoch, opt.n_epochs):
         fake_A_ = fake_A_buffer.push_and_pop(fake_A)
         loss_fake = criterion_GAN(D_A(fake_A_.detach()), fake)
         # Identity loss
-        loss_id_D_A = D_A_identity(G_BA(real_A), real_A)
+        #loss_id_D_A = D_A_identity(G_BA(real_A), real_A)
         # Total loss
-        loss_D_A = (loss_real + loss_fake) / 2 + loss_id_D_A
+        loss_D_A = (loss_real + loss_fake) / 2
 
         loss_D_A.backward()
         optimizer_D_A.step()
@@ -240,9 +243,9 @@ for epoch in range(opt.epoch, opt.n_epochs):
         fake_B_ = fake_B_buffer.push_and_pop(fake_B)
         loss_fake = criterion_GAN(D_B(fake_B_.detach()), fake)
         # Identity loss
-        loss_id_D_B = D_B_identity(G_AB(real_A), real_B)
+        #loss_id_D_B = D_B_identity(G_AB(real_A), real_B)
         # Total loss
-        loss_D_B = (loss_real + loss_fake) / 2 + loss_id_D_B
+        loss_D_B = (loss_real + loss_fake) / 2
 
         loss_D_B.backward()
         optimizer_D_B.step()
