@@ -42,11 +42,16 @@ parser.add_argument('--n_residual_blocks', type=int, default=9, help='number of 
 opt = parser.parse_args()
 print(opt)
 
-root = '/media/arg_ws3/5E703E3A703E18EB/research/cycle_box_sim2real/'
+save_root = '/media/arg_ws3/5E703E3A703E18EB/research/cycle_box_ssim/'
+data_root = "/media/arg_ws3/5E703E3A703E18EB/data/mm_unity_new/"
+root_A_train = "/media/arg_ws3/5E703E3A703E18EB/data/mm_unity_new/unity_boxes_train.csv"
+root_A_test = "/media/arg_ws3/5E703E3A703E18EB/data/mm_unity_new/unity_boxes_test.csv"
+root_B_train = "/media/arg_ws3/5E703E3A703E18EB/data/mm_unity_new/real_boxes_train.csv"
+root_B_test = "/media/arg_ws3/5E703E3A703E18EB/data/mm_unity_new/real_boxes_test.csv"
 
 # Create sample and checkpoint directories
-os.makedirs(root + 'images/%s' % opt.dataset_name, exist_ok=True)
-os.makedirs(root + 'saved_models/%s' % opt.dataset_name, exist_ok=True)
+os.makedirs(save_root + 'images/%s' % opt.dataset_name, exist_ok=True)
+os.makedirs(save_root + 'saved_models/%s' % opt.dataset_name, exist_ok=True)
 
 class SimilarMSELoss(nn.Module):
     def __init__(self):
@@ -100,10 +105,10 @@ pretrained_num = 0
 
 if False:
     # Load pretrained models
-    G_AB.load_state_dict(torch.load(root + 'saved_models/%s/G_AB_%d.pth' % (opt.dataset_name, pretrained_num)))
-    G_BA.load_state_dict(torch.load(root + 'saved_models/%s/G_BA_%d.pth' % (opt.dataset_name, pretrained_num)))
-    D_A.load_state_dict(torch.load(root + 'saved_models/%s/D_A_%d.pth' % (opt.dataset_name, pretrained_num)))
-    D_B.load_state_dict(torch.load(root + 'saved_models/%s/D_B_%d.pth' % (opt.dataset_name, pretrained_num)))
+    G_AB.load_state_dict(torch.load(save_root + 'saved_models/%s/G_AB_%d.pth' % (opt.dataset_name, pretrained_num)))
+    G_BA.load_state_dict(torch.load(save_root + 'saved_models/%s/G_BA_%d.pth' % (opt.dataset_name, pretrained_num)))
+    D_A.load_state_dict(torch.load(save_root + 'saved_models/%s/D_A_%d.pth' % (opt.dataset_name, pretrained_num)))
+    D_B.load_state_dict(torch.load(save_root + 'saved_models/%s/D_B_%d.pth' % (opt.dataset_name, pretrained_num)))
 else:
     # Initialize weights
     G_AB.apply(weights_init_normal)
@@ -140,10 +145,10 @@ transforms_ = [ transforms.Resize(int(opt.img_height*1.12), Image.BICUBIC),
                 transforms.Normalize((0.5,0.5,0.5), (0.5,0.5,0.5)) ]
 
 # Training data loader
-dataloader = DataLoader(ImageDataset("/media/arg_ws3/5E703E3A703E18EB/data/mm_unity_new/", transforms_=transforms_, unaligned=True),
+dataloader = DataLoader(ImageDataset(data_root, root_A_train, root_B_train, transforms_=transforms_, unaligned=True),
                         batch_size=opt.batch_size, shuffle=True, num_workers=opt.n_cpu)
 # Test data loader
-val_dataloader = DataLoader(ImageDataset("/media/arg_ws3/5E703E3A703E18EB/data/mm_unity_new/", transforms_=transforms_, unaligned=True, mode='test'),
+val_dataloader = DataLoader(ImageDataset(data_root, root_A_test, root_B_test, transforms_=transforms_, unaligned=True, mode='test'),
                         batch_size=5, shuffle=True, num_workers=1)
 
 
@@ -156,7 +161,7 @@ def sample_images(batches_done):
     fake_A = G_BA(real_B)
     img_sample = torch.cat((real_A.data, fake_B.data,
                             real_B.data, fake_A.data), 0)
-    save_image(img_sample, root + 'images/%s/%s.png' % (opt.dataset_name, batches_done), nrow=5, normalize=True)
+    save_image(img_sample, save_root + 'images/%s/%s.png' % (opt.dataset_name, batches_done), nrow=5, normalize=True)
 
 
 # ----------
@@ -293,10 +298,10 @@ for epoch in range(opt.epoch, opt.n_epochs):
             sample_images(batches_done+pretrained_num)
         if batches_done % opt.checkpoint_interval == 0:
             # Save model checkpoints
-            torch.save(G_AB.state_dict(), root + 'saved_models/%s/G_AB_%d_.pth' % (opt.dataset_name, batches_done+pretrained_num))
-            torch.save(G_BA.state_dict(), root + 'saved_models/%s/G_BA_%d_.pth' % (opt.dataset_name, batches_done+pretrained_num))
-            torch.save(D_A.state_dict(), root + 'saved_models/%s/D_A_%d_.pth' % (opt.dataset_name, batches_done+pretrained_num))
-            torch.save(D_B.state_dict(), root + 'saved_models/%s/D_B_%d_.pth' % (opt.dataset_name, batches_done+pretrained_num))
+            torch.save(G_AB.state_dict(), save_root + 'saved_models/%s/G_AB_%d_.pth' % (opt.dataset_name, batches_done+pretrained_num))
+            torch.save(G_BA.state_dict(), save_root + 'saved_models/%s/G_BA_%d_.pth' % (opt.dataset_name, batches_done+pretrained_num))
+            torch.save(D_A.state_dict(), save_root + 'saved_models/%s/D_A_%d_.pth' % (opt.dataset_name, batches_done+pretrained_num))
+            torch.save(D_B.state_dict(), save_root + 'saved_models/%s/D_B_%d_.pth' % (opt.dataset_name, batches_done+pretrained_num))
 
 
     # Update learning rates
@@ -304,7 +309,7 @@ for epoch in range(opt.epoch, opt.n_epochs):
     lr_scheduler_D_A.step()
     lr_scheduler_D_B.step()
 
-torch.save(G_AB.state_dict(), root + 'saved_models/%s/G_AB.pth' % (opt.dataset_name))
-torch.save(G_BA.state_dict(), root + 'saved_models/%s/G_BA.pth' % (opt.dataset_name))
-torch.save(D_A.state_dict(), root + 'saved_models/%s/D_A.pth' % (opt.dataset_name))
-torch.save(D_B.state_dict(), root + 'saved_models/%s/D_B.pth' % (opt.dataset_name))
+torch.save(G_AB.state_dict(), save_root + 'saved_models/%s/G_AB.pth' % (opt.dataset_name))
+torch.save(G_BA.state_dict(), save_root + 'saved_models/%s/G_BA.pth' % (opt.dataset_name))
+torch.save(D_A.state_dict(), save_root + 'saved_models/%s/D_A.pth' % (opt.dataset_name))
+torch.save(D_B.state_dict(), save_root + 'saved_models/%s/D_B.pth' % (opt.dataset_name))
