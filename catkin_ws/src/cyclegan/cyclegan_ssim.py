@@ -42,12 +42,12 @@ parser.add_argument('--n_residual_blocks', type=int, default=9, help='number of 
 opt = parser.parse_args()
 print(opt)
 
-save_root = '/media/arg_ws3/5E703E3A703E18EB/research/cycle_box_ssim/'
-data_root = "/media/arg_ws3/5E703E3A703E18EB/data/mm_unity_new/"
-root_A_train = "/media/arg_ws3/5E703E3A703E18EB/data/mm_unity_new/unity_boxes_train.csv"
-root_A_test = "/media/arg_ws3/5E703E3A703E18EB/data/mm_unity_new/unity_boxes_test.csv"
-root_B_train = "/media/arg_ws3/5E703E3A703E18EB/data/mm_unity_new/real_boxes_train.csv"
-root_B_test = "/media/arg_ws3/5E703E3A703E18EB/data/mm_unity_new/real_boxes_test.csv"
+save_root = '/media/arg_ws3/5E703E3A703E18EB/research/sim2real/'
+data_root = "/media/arg_ws3/5E703E3A703E18EB/data/sim2real/"
+root_A_train = "/media/arg_ws3/5E703E3A703E18EB/data/sim2real/unity_totes_train.csv"
+root_A_test = "/media/arg_ws3/5E703E3A703E18EB/data/sim2real/unity_totes_test.csv"
+root_B_train = "/media/arg_ws3/5E703E3A703E18EB/data/sim2real/real_totes_train.csv"
+root_B_test = "/media/arg_ws3/5E703E3A703E18EB/data/sim2real/real_totes_test.csv"
 
 # Create sample and checkpoint directories
 os.makedirs(save_root + 'images/%s' % opt.dataset_name, exist_ok=True)
